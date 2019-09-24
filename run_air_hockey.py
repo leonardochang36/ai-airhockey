@@ -1,14 +1,11 @@
 #!/usr/bin/env python3
 
 import sys
-import logging
 import argparse
+import importlib
 
 import cv2 as cv
-
 import gamecore
-# import Player
-import importlib
 
 
 def main(args):
@@ -51,8 +48,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog=sys.argv[0])
 
     # Optional arguments
-    parser.add_argument("-p1", "--player1", default='player_A', help="Enter Player1 file url")
-    parser.add_argument("-p2", "--player2", default='player_B', help="Enter Player2 file url")
+    parser.add_argument("-p1", "--player1", default='player_A', help="Enter Player1 file url without .py extension")
+    parser.add_argument("-p2", "--player2", default='player_B', help="Enter Player2 file url without .py extension")
 
     args = parser.parse_args()
     main(args)
