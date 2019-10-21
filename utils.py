@@ -22,11 +22,21 @@ def is_out_of_boundaries(state):
     return None
 
 
+def is_out_of_boundaries_paddle(paddle_pos, state):
+    if paddle_pos['x'] + state['paddle_radius'] >= state['board_shape'][1] \
+       or paddle_pos['x'] - state['paddle_radius'] <= 0:
+        return 'horizontal'
+    if paddle_pos['y'] + state['paddle_radius'] >= state['board_shape'][0] \
+       or paddle_pos['y'] - state['paddle_radius'] <= 0:
+        return 'vertical'
+    return None
+
+
 def is_goal(state):
     if is_out_of_boundaries(state) == 'horizontal':
         if state['puck_pos']['y'] > state['board_shape'][0] * (1 - state['goal_size']) / 2 and \
              state['puck_pos']['y'] < state['board_shape'][0] * (1 + state['goal_size']) / 2:
-            if state['puck_pos']['x'] - state['puck_radius'] <= 0:
+            if state['puck_pos']['x'] < state['board_shape'][1] / 2:
                 return 'left'
             else:
                 return 'right'
@@ -38,6 +48,7 @@ def distance_between_points(p1, p2):
 
 
 def detect_collision(state, pos2, r2):
+    # TODO revisar esta parte
     return bool(distance_between_points(next_pos_from_state(state), pos2) <= state['puck_radius'] + r2)
 
 

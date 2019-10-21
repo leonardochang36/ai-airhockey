@@ -10,6 +10,7 @@ class Player:
         self.my_goal_center = {}
         self.opponent_goal_center = {}
         self.my_paddle_pos = paddle_pos
+        self.my_display_name = "AIR KINGS"
         # cv.namedWindow('a')
 
 
@@ -30,7 +31,7 @@ class Player:
                                      'y': current_state['board_shape'][0]/2}
 
         # find if puck path is near my goal
-        roi_radius = current_state['board_shape'][0] * current_state['goal_size'] / 2 * 2
+        roi_radius = current_state['board_shape'][0] * current_state['goal_size'] * 2
         pt_in_roi = None
         for p in path:
             if utils.distance_between_points(p[0], self.my_goal_center) < roi_radius:
@@ -57,8 +58,12 @@ class Player:
                                     utils.distance_between_points(target_pos, self.my_paddle_pos))
                 direction_vector = {k: v * movement_dist
                                     for k, v in direction_vector.items()}
-                self.my_paddle_pos = {'x': self.my_paddle_pos['x'] + direction_vector['x'],
-                                    'y': self.my_paddle_pos['y'] + direction_vector['y']}
+                new_paddle_pos = {'x': self.my_paddle_pos['x'] + direction_vector['x'],
+                                  'y': self.my_paddle_pos['y'] + direction_vector['y']}
+                
+                # check if computed new position in inside board limits
+                if utils.is_out_of_boundaries_paddle(new_paddle_pos, current_state) is None:
+                    self.my_paddle_pos = new_paddle_pos
 
         return self.my_paddle_pos
 

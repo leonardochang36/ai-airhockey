@@ -2,6 +2,7 @@ import copy
 import utils
 import cv2 as cv
 import numpy as np
+import time
 
 class Player:
     def __init__(self, paddle_pos, goal_side):
@@ -10,7 +11,7 @@ class Player:
         self.my_goal_center = {}
         self.opponent_goal_center = {}
         self.my_paddle_pos = paddle_pos
-        # cv.namedWindow('a')
+        self.my_display_name = "DREAM TEAM"
 
 
     def next_move(self, current_state):
@@ -30,7 +31,7 @@ class Player:
                                      'y': current_state['board_shape'][0]/2}
 
         # find if puck path is near my goal
-        roi_radius = current_state['board_shape'][0] * current_state['goal_size'] / 2 * 2
+        roi_radius = current_state['board_shape'][0] * current_state['goal_size'] * 2
         pt_in_roi = None
         for p in path:
             if utils.distance_between_points(p[0], self.my_goal_center) < roi_radius:
@@ -42,11 +43,7 @@ class Player:
             target_pos = utils.aim(pt_in_roi[0], pt_in_roi[1],
                                         self.opponent_goal_center, current_state['puck_radius'],
                                         current_state['paddle_radius'])
-            # if self.my_goal == 'right':
-                # target_pos = {'x': 300, 'y': 400}
-                # print(pt_in_roi, self.opponent_goal_center, utils.round_point_as_tuple(target_pos), utils.round_point_as_tuple(self.my_paddle_pos))
-                # print(utils.round_point_as_tuple(target_pos), utils.round_point_as_tuple(self.my_paddle_pos))
-            #
+
             if target_pos != self.my_paddle_pos:
                 direction_vector = {'x': target_pos['x'] - self.my_paddle_pos['x'],
                                     'y': target_pos['y'] - self.my_paddle_pos['y']}
@@ -57,10 +54,17 @@ class Player:
                                     utils.distance_between_points(target_pos, self.my_paddle_pos))
                 direction_vector = {k: v * movement_dist
                                     for k, v in direction_vector.items()}
-                self.my_paddle_pos = {'x': self.my_paddle_pos['x'] + direction_vector['x'],
-                                    'y': self.my_paddle_pos['y'] + direction_vector['y']}
+                new_paddle_pos = {'x': self.my_paddle_pos['x'] + direction_vector['x'],
+                                  'y': self.my_paddle_pos['y'] + direction_vector['y']}
+                
+                # check if computed new position in inside board limits
+                if utils.is_out_of_boundaries_paddle(new_paddle_pos, current_state) is None:
+                    self.my_paddle_pos = new_paddle_pos
 
+        # time.sleep(2)
+        # return {'x': -12, 'y': -6543}
         return self.my_paddle_pos
+        
 
 
 def estimate_path(current_state, after_time):
