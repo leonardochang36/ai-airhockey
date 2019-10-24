@@ -61,6 +61,8 @@ def main(args):
         if isinstance(v, Exception):
             result[k] = str(type(v).__name__) + ': ' + str(v)
 
+    result['display_names'] = {'left': player1.my_display_name, 'right': player2.my_display_name}
+
     result = json.dumps(result, skipkeys=True)
     # print(result)
     return result
