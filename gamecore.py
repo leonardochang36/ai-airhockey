@@ -16,12 +16,12 @@ class GameCore:
         self.gui_core = gui_core
         self.goals = {'left': 0, 'right': 0}
         self.max_time = 1
-        self.verbose = True
+        self.verbose = False
         self.in_initial_state = 0
         self.max_idle_moves = 100
         self.winning_points = 700
         self.game_begin_time = time.time()
-        self.game_max_time = 60
+        self.game_max_time = 15
 
 
     def begin_game(self):
@@ -30,6 +30,7 @@ class GameCore:
             ### Check winning conditions
             #####################################################################
             if self.check_stop_game_conditions():
+                self.gui_core.release_all()
                 return self.check_stop_game_conditions()
             
             #####################################################################
@@ -41,11 +42,12 @@ class GameCore:
                 if new_puck_pos['x'] != self.state['puck_pos']['x']:
                     self.in_initial_state = None
                 elif self.in_initial_state >= self.max_idle_moves:
-                    goal_in = 'left' if self.state['puck_pos']['x'] < self.board.shape[1]/2 else 'right'
-                    self.goals[goal_in] += 1
+                    goal_for = 'left' if self.state['puck_pos']['x'] > self.board.shape[1]/2 else 'right'
+                    self.goals[goal_for] += 1
+                    self.state['goals'] = self.goals
 
                     # set new puck position
-                    new_puck_pos_in = 'right' if goal_in == 'left' else 'left'
+                    new_puck_pos_in = 'left' if goal_for == 'left' else 'right'
                     self.state['puck_pos'] = self.set_random_position_at(new_puck_pos_in)
                     self.state['puck_speed'] = {'x': 0,
                                                 'y': utils.vector_l2norm(self.state['puck_speed'])}
@@ -60,6 +62,7 @@ class GameCore:
             if utils.is_goal(self.state) is not None:
                 # update scores
                 self.goals[utils.is_goal(self.state)] += 1
+                self.state['goals'] = self.goals
 
                 if self.verbose:
                     print('GOAL!!! in', utils.is_goal(self.state), 'the score is', self.goals)
@@ -103,7 +106,8 @@ class GameCore:
             #####################################################################
             ### Visual feedback
             #####################################################################
-            flag = self.gui_core.resolve_gui(self.state)
+            flag = self.gui_core.resolve_gui(self.state, self.player1.my_display_name,
+                                             self.player2.my_display_name)
             if flag < 0:
                 self.gui_core.release_all()
                 return {'status': 'ERROR', 'info': 'Program exited by user (ESC key pressed)',

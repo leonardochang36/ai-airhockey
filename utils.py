@@ -37,9 +37,9 @@ def is_goal(state):
         if state['puck_pos']['y'] > state['board_shape'][0] * (1 - state['goal_size']) / 2 and \
              state['puck_pos']['y'] < state['board_shape'][0] * (1 + state['goal_size']) / 2:
             if state['puck_pos']['x'] < state['board_shape'][1] / 2:
-                return 'left'
-            else:
                 return 'right'
+            else:
+                return 'left'
     return None
 
 

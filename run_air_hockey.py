@@ -17,7 +17,7 @@ def main(args):
 
     # initiallize game state
     state = {}
-    state['delta_t'] = 1/100
+    state['delta_t'] = 1/30
     state['board_shape'] = board.shape
     state['goal_size'] = 0.45
     state['puck_radius'] = int(round(state['board_shape'][0] * 3.25 / 51.25)) # Use standard measures
@@ -25,12 +25,13 @@ def main(args):
     x_offset = 0.25 if random.uniform(-1, 1) < 0 else 0.75
     state['puck_pos'] = {'x': board.shape[1] * x_offset, 'y': random.uniform(0 + state['puck_radius'],
                          board.shape[0] - state['puck_radius'])}
-    state['puck_speed'] = {'x': 0, 'y': 3500}
+    state['puck_speed'] = {'x': 0, 'y': 500}
     state['paddle1_pos'] = {'x': board.shape[1]*0.11, 'y': board.shape[0]/2}
     state['paddle2_pos'] = {'x': board.shape[1]*0.89, 'y': board.shape[0]/2}
     state['paddle1_speed'] = {'x': 0, 'y': 0}
     state['paddle2_speed'] = {'x': 0, 'y': 0}
-    state['paddle_max_speed'] = 1000
+    state['paddle_max_speed'] = 150
+    state['goals'] = {'left': 0, 'right': 0}
     epsilon = 5
 
     # initiallize gui core
@@ -53,6 +54,9 @@ def main(args):
 
     # run game
     result = game_core.begin_game()
+    for k, v in result.items():
+        if not isinstance(v, str):
+            result[k] = str(type(v).__name__) + ': ' + str(v)
     # print(result)
     return result
 
