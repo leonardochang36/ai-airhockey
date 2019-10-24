@@ -5,6 +5,7 @@ import argparse
 import importlib
 import random
 import logging
+import json
 
 import cv2 as cv
 import gamecore
@@ -54,9 +55,13 @@ def main(args):
 
     # run game
     result = game_core.begin_game()
+
+    # convert exception data types to string
     for k, v in result.items():
-        if not isinstance(v, str):
+        if isinstance(v, Exception):
             result[k] = str(type(v).__name__) + ': ' + str(v)
+
+    result = json.dumps(result, skipkeys=True)
     # print(result)
     return result
 
