@@ -21,11 +21,13 @@ class GameCore:
         self.max_idle_moves = 100
         self.winning_points = 700
         self.game_begin_time = time.time()
-        self.game_max_time = 15
+        self.game_max_time = 5
 
 
     def begin_game(self):
         while True:
+            self.state['is_goal_move'] = None
+
             #####################################################################
             ### Check winning conditions
             #####################################################################
@@ -45,6 +47,7 @@ class GameCore:
                     goal_for = 'left' if self.state['puck_pos']['x'] > self.board.shape[1]/2 else 'right'
                     self.goals[goal_for] += 1
                     self.state['goals'] = self.goals
+                    self.state['is_goal_move'] = goal_for
 
                     # set new puck position
                     new_puck_pos_in = 'left' if goal_for == 'left' else 'right'
@@ -63,6 +66,7 @@ class GameCore:
                 # update scores
                 self.goals[utils.is_goal(self.state)] += 1
                 self.state['goals'] = self.goals
+                self.state['is_goal_move'] = utils.is_goal(self.state)
 
                 if self.verbose:
                     print('GOAL!!! in', utils.is_goal(self.state), 'the score is', self.goals)
@@ -112,6 +116,8 @@ class GameCore:
                 self.gui_core.release_all()
                 return {'status': 'ERROR', 'info': 'Program exited by user (ESC key pressed)',
                         'goals': self.goals, 'winner': None}
+
+            
 
         self.gui_core.release_all()
         return {'status': 'ERROR', 'info': 'Unknown error occurred',

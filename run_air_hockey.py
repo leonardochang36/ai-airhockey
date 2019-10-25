@@ -33,6 +33,7 @@ def main(args):
     state['paddle2_speed'] = {'x': 0, 'y': 0}
     state['paddle_max_speed'] = 150
     state['goals'] = {'left': 0, 'right': 0}
+    state['is_goal_move'] = None
     epsilon = 5
 
     # initiallize gui core
@@ -56,6 +57,7 @@ def main(args):
     # run game
     result = game_core.begin_game()
 
+    # prepare output
     # convert exception data types to string
     for k, v in result.items():
         if isinstance(v, Exception):
@@ -64,7 +66,6 @@ def main(args):
     result['display_names'] = {'left': player1.my_display_name, 'right': player2.my_display_name}
 
     result = json.dumps(result, skipkeys=True)
-    # print(result)
     return result
 
 
@@ -83,6 +84,8 @@ if __name__ == '__main__':
         sys.exit(main(args))
     except Exception as exc:
         logging.error(" Oops... something went wrong :(", exc_info=True)
-        status = {'status': 'ERROR', 'info': exc, 'goals': None, 'winner': None}
-        print(status)
+        status = {'status': 'ERROR', 'info': str(exc), 'goals': None, 'winner': None,
+                  'display_names': {'left': 'left', 'right': 'rigth'}}
+
+        print(json.dumps(status, skipkeys=True))
         sys.exit(-1)
