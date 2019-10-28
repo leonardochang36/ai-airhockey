@@ -10,7 +10,7 @@ The only restrictions here are:
  - to implement a class constructor with the args: paddle_pos, goal_side
  - set self.my_display_name with your team's name, max. 15 characters
  - to implement the function next_move(self, current_state),
-    returnin the next position of your paddle
+    returning the next position of your paddle
 """
 
 import copy
