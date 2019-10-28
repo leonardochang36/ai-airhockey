@@ -1,7 +1,16 @@
+""" GUICore module
+
+This module implements all the visual feedback functionalities.
+Including, real-time window-based feed and .avi(h264) video file export.
+Be sure you have installed OpenCV, ffmpeg, x264.
+
+"""
+
 import copy
 import cv2 as cv
-import utils
 import numpy as np
+
+import utils
 
 class GUICore:
     def __init__(self, board, show_window=True, save_video=False, video_file=None):
@@ -13,13 +22,13 @@ class GUICore:
         if show_window:
             cv.namedWindow('AIR HOCKEY')
         if save_video:
-            self.out_vid = cv.VideoWriter(video_file, cv.VideoWriter_fourcc('D', 'I', 'V', 'X'), 30,
-                                          (self.board.shape[1], 
-                                           int(round(self.board.shape[0] * 1.25))))
+            self.out_vid = cv.VideoWriter(video_file, cv.VideoWriter_fourcc(*'MJPG'), 30,
+                                          (self.board.shape[1], int(round(self.board.shape[0] * 1.25))))
 
 
     def show_current_state(self, frame, sleep=False):
         cv.imshow('AIR HOCKEY', frame)
+        # key = cv.waitKey()
         key = cv.waitKey(1000 if sleep else 5)
         if key == 27: # Esc key to stop
             return -1
@@ -28,7 +37,7 @@ class GUICore:
 
     def write_current_state(self, frame, sleep=False):
         c = 60 if sleep else 1
-        for i in range(c):
+        for _ in range(c):
             self.out_vid.write(frame)
         return
 
@@ -45,35 +54,35 @@ class GUICore:
         cv.circle(board_feedback, utils.round_point_as_tuple(state['paddle2_pos']),
                   state['paddle_radius'], (0, 0, 255), -1)
 
-        
+
         if state['is_goal_move'] is None:
             # write text scores
             ## player 1
             ### write team's name
             pos_xy = (20, int(round(self.board.shape[0] * 1.20)))
             text_size = self.draw_text(board_feedback, p1, pos_xy, (255, 0, 0),
-                        (255, 255, 255), 1, 3, 'left')
+                                       (255, 255, 255), 1, 3, 'left')
 
             ### write score
             pos_xy = (20, int(round(self.board.shape[0] * 1.20 - text_size[1] * 1.5)))
             self.draw_text(board_feedback, str(state['goals']['left']), pos_xy, (255, 0, 0),
-                        (255, 255, 255), 2, 3, 'left')
+                           (255, 255, 255), 2, 3, 'left')
 
             ## player 2
             ### write team's name
             pos_xy = (self.board.shape[1] - 20, int(round(self.board.shape[0] * 1.20)))
             text_size = self.draw_text(board_feedback, p2, pos_xy, (0, 0, 255),
-                        (255, 255, 255), 1, 3, 'right')
+                                       (255, 255, 255), 1, 3, 'right')
 
             ### write score
             pos_xy = (self.board.shape[1] - 20, int(round(self.board.shape[0] * 1.20-text_size[1]*1.5)))
             self.draw_text(board_feedback, str(state['goals']['right']), pos_xy, (0, 0, 255),
-                        (255, 255, 255), 2, 3, 'right')
+                           (255, 255, 255), 2, 3, 'right')
         else:
             # write GOAL sign
             pos_xy = (int(board_feedback.shape[1]/2), int(round(self.board.shape[0] * 1.20)))
             self.draw_text(board_feedback, 'GOALLLL for ' + (p1 if state['is_goal_move'] == 'left' else p2),
-                           pos_xy, (0,165,255), (255, 255, 255), 1.5, 3, 'center')
+                           pos_xy, (0, 165, 255), (255, 255, 255), 1.5, 3, 'center')
 
         if self.save_video:
             self.write_current_state(board_feedback, state['is_goal_move'] is not None)
@@ -110,29 +119,3 @@ class GUICore:
         cv.putText(img, text, textorg, fontface, fontscale, bg_color, int(round(thickness * 3)), cv.LINE_AA)
         cv.putText(img, text, textorg, fontface, fontscale, text_color, thickness, cv.LINE_AA)
         return textsize[0]
-
-
-    # def draw_teams_scores(self, img, team, score, pos_xy, text_color, bg_color, fontscale,
-    #                       thickness, alignment='left'):
-        
-    #     fontface = cv.FONT_HERSHEY_SIMPLEX
-    #     # compute text size in image
-    #     textsize = cv.getTextSize(text, fontface, fontscale, thickness)
-
-    #     # set text origin according to alignment
-    #     if alignment == 'left':
-    #         textorg = (pos_xy[0], pos_xy[1])
-    #     else:
-    #         textorg = (pos_xy[0] - textsize[0][0], pos_xy[1])
-
-    #     # then put the text itself with offset border
-    #     cv.putText(img, team, textorg, fontface, fontscale, bg_color, int(round(thickness * 3)), cv.LINE_AA)
-    #     cv.putText(img, team, textorg, fontface, fontscale, text_color, thickness, cv.LINE_AA)
-
-    #     textorg = (textorg[0], textorg[1] - int(round(textsize[0][1] * 1.2)))
-    #     cv.putText(img, score, textorg, fontface, fontscale, bg_color, int(round(thickness * 3)), cv.LINE_AA)
-    #     cv.putText(img, score, textorg, fontface, fontscale, text_color, thickness, cv.LINE_AA)
-
-    #     return 
-
-        
