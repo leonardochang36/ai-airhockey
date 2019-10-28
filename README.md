@@ -1,5 +1,5 @@
 # RETO de Semana i: AI-AirHockey
-Este es el repositoria para nuestra actividad de semana i.
+Este es el repositorio para nuestra actividad de semana i.
 
 ## Objetivo del reto
 
