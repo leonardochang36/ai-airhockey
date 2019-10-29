@@ -89,8 +89,6 @@ class Player:
                      utils.is_out_of_boundaries_paddle(new_paddle_pos, current_state) is None:
                     self.my_paddle_pos = new_paddle_pos
 
-        # time.sleep(2)
-        # return {'x': -12, 'y': -6543}
         return self.my_paddle_pos
 
 

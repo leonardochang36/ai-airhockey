@@ -15,6 +15,7 @@ The only restrictions here are:
 
 import copy
 import utils
+import random
 
 class Player:
     def __init__(self, paddle_pos, goal_side):
@@ -52,8 +53,9 @@ class Player:
         # computing both goal centers
         self.my_goal_center = {'x': 0 if self.my_goal == 'left' else current_state['board_shape'][1],
                                'y': current_state['board_shape'][0]/2}
+        y = random.uniform(140, 370)
         self.opponent_goal_center = {'x': 0 if self.my_goal == 'right' else current_state['board_shape'][1],
-                                     'y': current_state['board_shape'][0]/2}
+                                     'y': y}
 
         # find if puck path is inside my interest area
         roi_radius = current_state['board_shape'][0] * current_state['goal_size'] * 2
@@ -89,8 +91,6 @@ class Player:
                      utils.is_out_of_boundaries_paddle(new_paddle_pos, current_state) is None:
                     self.my_paddle_pos = new_paddle_pos
 
-        # time.sleep(2)
-        # return {'x': -12, 'y': -6543}
         return self.my_paddle_pos
 
 

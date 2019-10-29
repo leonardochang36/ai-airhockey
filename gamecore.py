@@ -28,10 +28,10 @@ class GameCore:
         self.game_begin_time = time.time()
         self.game_elapsed_ticks = 0
         self.in_initial_state = 0
-        self.max_idle_moves = 100    # max number of idle moves after init position
-        self.winning_points = 7      # goals to win
-        self.max_time = 0.7          # max time (seconds) for one move, i.e., player.next_move
-        self.game_max_ticks = 2500   # max ticks (moves) for a game
+        self.max_idle_moves = 100    # max number of idle moves after init position, 100
+        self.winning_points = 7      # goals to win, 7
+        self.max_time = 0.7          # max time (seconds) for one move, i.e., player.next_move, 0.7
+        self.game_max_ticks = 2500   # max ticks (moves) for a game, 2500
 
 
     def begin_game(self):
@@ -52,7 +52,14 @@ class GameCore:
             self.process_move_from_state()
 
             # copy state to avoid any modification inside player's logic
-            state_copy = copy.copy(self.state)
+            state_copy = copy.deepcopy(self.state)
+
+            #####################################################################
+            ### Visual feedback
+            #####################################################################
+            flag = self.resolve_gui()
+            if flag:
+                return flag
 
             #####################################################################
             ### Make Player 1 move
@@ -79,13 +86,6 @@ class GameCore:
                 self.gui_core.release_all()
                 return {'status': 'ERROR', 'info': exc,
                         'goals': self.goals, 'winner': self.player1.my_display_name}
-
-            #####################################################################
-            ### Visual feedback
-            #####################################################################
-            flag = self.resolve_gui()
-            if flag:
-                return flag
 
         self.gui_core.release_all()
         return {'status': 'ERROR', 'info': 'Unknown error occurred',
@@ -130,24 +130,18 @@ class GameCore:
         self.check_paddle_valid_move(paddle_new_pos, self.state[paddle_pos], self.state, player)
 
         # add randomness of self.error rate maximum size and inside the board
-        ## horizontal shift
-        lower_bound = min(paddle_new_pos['x'] - self.state['paddle_radius'], self.error_rate)
-        upper_bound = min(self.state['board_shape'][1] - paddle_new_pos['x'] - self.state['paddle_radius'],
-                          self.error_rate)
-        paddle_new_pos['x'] += random.uniform(-lower_bound, upper_bound)
+        paddle_new_pos = {k: v + random.uniform(-self.error_rate, self.error_rate)
+                          for k, v in paddle_new_pos.items()}
 
-        ## vertical shift
-        lower_bound = min(paddle_new_pos['y'] - self.state['paddle_radius'], self.error_rate)
-        upper_bound = min(self.state['board_shape'][0] - paddle_new_pos['y'] - self.state['paddle_radius'],
-                          self.error_rate)
-        paddle_new_pos['y'] += random.uniform(-lower_bound, upper_bound)
+        # rectify overlap if exists
+        paddle_new_pos = utils.rectify_circles_overlap(self.state['puck_pos'],
+                                                       self.state['puck_radius'],
+                                                       paddle_new_pos,
+                                                       self.state['paddle_radius'])
 
-        # if pos + randomness is inside goal area, move it out this area
-        if utils.is_inside_goal_area_paddle(paddle_new_pos, self.state):
-            center = {'x': 0 if self.goal_sides['left'] is player else self.board.shape[1],
-                      'y': self.board.shape[0]/2}
-            r = self.state['goal_size'] * self.board.shape[0] / 2 + 2
-            paddle_new_pos = utils.nearest_point_in_circle(center, r, paddle_new_pos)
+        # if random shift caused an out of limits, rectify.
+        goal_side = 'left' if self.goal_sides['left'] is player else 'right'
+        paddle_new_pos = utils.rectify_circle_out_of_bounds(paddle_new_pos, goal_side, self.state)
 
         return paddle_new_pos
 
