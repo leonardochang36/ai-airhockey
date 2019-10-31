@@ -271,12 +271,22 @@ def rectify_circle_out_of_bounds(pos, goal_side, state):
         New position for paddle if it was out of limits
     """
 
+    pos = rectify_cicle_out_of_board(pos, goal_side, state)
+    pos = rectify_cicle_inside_goal_area(pos, goal_side, state)
+    return pos
+
+
+def rectify_cicle_out_of_board(pos, goal_side, state):
     board_shape = state['board_shape']
     r = state['paddle_radius']
 
     # check for board limits
-    lref = r if goal_side == 'left' else board_shape[1]/2 + r
-    rref = board_shape[1]/2 - r if goal_side == 'left' else board_shape[1] - r
+    if goal_side:
+        lref = r if goal_side == 'left' else board_shape[1]/2 + r
+        rref = board_shape[1]/2 - r if goal_side == 'left' else board_shape[1] - r
+    else:
+        lref = r
+        rref = board_shape[1] - r
 
     if pos['x'] < lref:
         pos['x'] = lref
@@ -286,9 +296,13 @@ def rectify_circle_out_of_bounds(pos, goal_side, state):
         pos['y'] = r
     if pos['y'] > board_shape[0] - r:
         pos['y'] = board_shape[0] - r
+    return pos
 
+
+def rectify_cicle_inside_goal_area(pos, goal_side, state):
     # check for goal area limits
     # if inside area, move it to the closet point out of goal area
+    board_shape = state['board_shape']
     if is_inside_goal_area_paddle(pos, state):
         center = {'x': 0 if goal_side == 'left' else board_shape[1],
                   'y': board_shape[0]/2}

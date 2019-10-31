@@ -16,6 +16,7 @@ The only restrictions here are:
 import copy
 import utils
 
+
 class Player:
     def __init__(self, paddle_pos, goal_side):
 

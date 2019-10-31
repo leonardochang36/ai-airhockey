@@ -22,7 +22,7 @@ class GUICore:
         if show_window:
             cv.namedWindow('AIR HOCKEY')
         if save_video:
-            self.out_vid = cv.VideoWriter(video_file, cv.VideoWriter_fourcc(*'H264'), 30,
+            self.out_vid = cv.VideoWriter(video_file, cv.VideoWriter_fourcc(*'H264'), 50,
                                           (self.board.shape[1], int(round(self.board.shape[0] * 1.25))))
 
 
@@ -81,7 +81,7 @@ class GUICore:
         else:
             # write GOAL sign
             pos_xy = (int(board_feedback.shape[1]/2), int(round(self.board.shape[0] * 1.20)))
-            self.draw_text(board_feedback, 'GOALLLL for ' + (p1 if state['is_goal_move'] == 'left' else p2),
+            self.draw_text(board_feedback, 'GOALLL for ' + (p1 if state['is_goal_move'] == 'left' else p2),
                            pos_xy, (0, 165, 255), (255, 255, 255), 1.5, 3, 'center')
 
         if self.save_video:
