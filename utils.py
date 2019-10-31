@@ -231,8 +231,8 @@ def nearest_point_in_circle(center, r, point):
 
 
 def rectify_circles_overlap(center_1, r_1, center_2, r_2):
-    """ Function that resolve overlap between circles by moving away circle2 until 1
-    point intersection between the two circels but keeping the same orientation
+    """ Function that resolve overlap between circles by moving away circle2 until 1 
+    point intersection between the two circels but keeping the same orientation 
     (i.e., the direction after collision will hold)
 
     Args:
