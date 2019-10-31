@@ -174,8 +174,10 @@ class GameCore:
                         'winner': self.goal_sides[winner].my_display_name}
             elif self.game_elapsed_ticks == self.game_max_ticks:
                 self.error_rate *= 2
+                self.state['puck_speed'] = {k: v * 1.2 for k, v in self.state['puck_speed'].items()}
             elif self.game_elapsed_ticks == round(self.game_max_ticks * 1.3):
-                self.error_rate *= 4
+                self.error_rate *= 2
+                self.state['puck_speed'] = {k: v * 1.3 for k, v in self.state['puck_speed'].items()}
             elif self.game_elapsed_ticks > self.game_max_ticks * 1.6:
                 return {'status': 'SUCCESS', 'info': 'Game tied by time', 'goals': self.goals,
                         'winner': None}
