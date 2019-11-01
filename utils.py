@@ -258,7 +258,7 @@ def rectify_circles_overlap(center_1, r_1, center_2, r_2):
     return {k: center_1[k] + v * (r_1+r_2) for k, v in dir_vector.items()}
 
 
-def rectify_circle_out_of_bounds(pos, goal_side, state):
+def rectify_circle_out_of_bounds(pos, speed, goal_side, state):
     """ Function that moves the puck to a safe area if it is out of limits,
     i.e., out of board or inside goal area
 
@@ -271,14 +271,21 @@ def rectify_circle_out_of_bounds(pos, goal_side, state):
         New position for paddle if it was out of limits
     """
 
-    pos = rectify_cicle_out_of_board(pos, goal_side, state)
+    pos = rectify_cicle_out_of_board(pos, speed, goal_side, state)
     pos = rectify_cicle_inside_goal_area(pos, goal_side, state)
     return pos
 
 
-def rectify_cicle_out_of_board(pos, goal_side, state):
+def rectify_cicle_out_of_board(pos, speed, goal_side, state):
     board_shape = state['board_shape']
     r = state['paddle_radius']
+
+    magnitude = vector_l2norm(speed)
+    if magnitude == 0:
+        return pos
+
+    opposite = {"x": -speed["x"] / magnitude, "y": -speed["y"] / magnitude}
+
 
     # check for board limits
     if goal_side:
@@ -288,14 +295,30 @@ def rectify_cicle_out_of_board(pos, goal_side, state):
         lref = r
         rref = board_shape[1] - r
 
-    if pos['x'] < lref:
-        pos['x'] = lref
-    if pos['x'] > rref:
-        pos['x'] = rref
-    if pos['y'] < r:
-        pos['y'] = r
-    if pos['y'] > board_shape[0] - r:
-        pos['y'] = board_shape[0] - r
+    if pos["x"] < lref:
+        delta = abs(pos["x"] - lref)
+        delta = abs(delta / opposite["x"])
+        pos["x"] += delta * opposite["x"]
+        pos["y"] += delta * opposite["y"]
+
+    if pos["x"] > rref:
+        delta = abs(pos["x"] - rref)
+        delta = abs(delta / opposite["x"])
+        pos["x"] += delta * opposite["x"]
+        pos["y"] += delta * opposite["y"]
+
+    if pos["y"] < r:
+        delta = abs(pos["y"] - r)
+        delta = abs(delta / opposite["y"])
+        pos["x"] += delta * opposite["x"]
+        pos["y"] += delta * opposite["y"]
+
+    if pos["y"] > board_shape[0] - r:
+        delta = abs(pos["y"] - (board_shape[0] - r))
+        delta = abs(delta / opposite["y"])
+        pos["x"] += delta * opposite["x"]
+        pos["y"] += delta * opposite["y"]
+
     return pos
 
 
