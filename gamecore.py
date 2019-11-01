@@ -139,9 +139,14 @@ class GameCore:
                                                        paddle_new_pos,
                                                        self.state['paddle_radius'])
 
+        paddle_speed = {
+            "x": paddle_new_pos["x"] - self.state[paddle_pos]["x"],
+            "y": paddle_new_pos["y"] - self.state[paddle_pos]["y"],
+        }
+
         # if random shift caused an out of limits, rectify.
         goal_side = 'left' if self.goal_sides['left'] is player else 'right'
-        paddle_new_pos = utils.rectify_circle_out_of_bounds(paddle_new_pos, goal_side, self.state)
+        paddle_new_pos = utils.rectify_circle_out_of_bounds(paddle_new_pos, paddle_speed, goal_side, self.state)
 
         return paddle_new_pos
 
@@ -229,7 +234,7 @@ class GameCore:
                 self.in_initial_state += 1
 
         # update pos in state
-        self.state['puck_pos'] = utils.rectify_cicle_out_of_board(new_puck_pos, None, self.state)
+        self.state['puck_pos'] = utils.rectify_cicle_out_of_board(new_puck_pos, self.state['puck_speed'], None, self.state)
 
         # if is goal
         if utils.is_goal(self.state) is not None:
