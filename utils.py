@@ -44,12 +44,20 @@ def is_out_of_boundaries(state):
         None: if is not out of the boundaries
         str: 'horizontal' or 'vertical' if is out of boundaries.
     """
-    if next_pos_from_state(state)['x'] + state['puck_radius'] >= state['board_shape'][1] \
-       or next_pos_from_state(state)['x'] - state['puck_radius'] <= 0:
+    # if next_pos_from_state(state)['x'] + state['puck_radius'] >= state['board_shape'][1] \
+    #    or next_pos_from_state(state)['x'] - state['puck_radius'] <= 0:
+    #     return 'horizontal'
+    # if next_pos_from_state(state)['y'] + state['puck_radius'] >= state['board_shape'][0] \
+    #    or next_pos_from_state(state)['y'] - state['puck_radius'] <= 0:
+    #     return 'vertical'
+
+    if state['puck_pos']['x'] + state['puck_radius'] >= state['board_shape'][1] \
+       or state['puck_pos']['x'] - state['puck_radius'] <= 0:
         return 'horizontal'
-    if next_pos_from_state(state)['y'] + state['puck_radius'] >= state['board_shape'][0] \
-       or next_pos_from_state(state)['y'] - state['puck_radius'] <= 0:
+    if state['puck_pos']['y'] + state['puck_radius'] >= state['board_shape'][0] \
+       or state['puck_pos']['y'] - state['puck_radius'] <= 0:
         return 'vertical'
+  
     return None
 
 

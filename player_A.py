@@ -57,7 +57,8 @@ class Player:
                                      'y': current_state['board_shape'][0]/2}
 
         # find if puck path is inside my interest area
-        roi_radius = current_state['board_shape'][0] * current_state['goal_size'] * 2
+        # roi_radius = current_state['board_shape'][0] * current_state['goal_size'] * 2
+        roi_radius = current_state['board_shape'][1] / 4 + 30 
         pt_in_roi = None
         for p in path:
             if utils.distance_between_points(p[0], self.my_goal_center) < roi_radius:

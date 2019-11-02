@@ -1,0 +1,154 @@
+""" Player module
+
+This is a template/example class for your player.
+This is the only file you should modify.
+
+The logic of your hockey robot will be implemented in this class.
+Please implement the interface next_move().
+
+The only restrictions here are:
+ - to implement a class constructor with the args: paddle_pos, goal_side
+ - set self.my_display_name with your team's name, max. 15 characters
+ - to implement the function next_move(self, current_state),
+    returning the next position of your paddle
+"""
+
+import copy
+import utils
+
+
+class Player:
+    def __init__(self, paddle_pos, goal_side):
+
+        self.my_display_name = "HClub"
+
+        # these belong to my solution,
+        # you may erase or change them in yours
+        self.future_size = 30
+        self.my_goal = goal_side
+        self.my_goal_center = {}
+        self.opponent_goal_center = {}
+        self.my_paddle_pos = paddle_pos
+
+
+    def next_move(self, current_state):
+        """ Function that computes the next move of your paddle
+
+        Implement your algorithm here. This will be the only function
+        used by the GameCore. Be aware of abiding all the game rules.
+
+        Returns:
+            dict: coordinates of next position of your paddle.
+        """
+        
+        self.my_paddle_pos = current_state['paddle1_pos'] if self.my_goal == 'left' \
+                                                              else current_state['paddle2_pos']
+        path = estimate_path(current_state, self.future_size)
+        self.my_goal_center = {'x': 0 if self.my_goal == 'left' else current_state['board_shape'][1],
+                               'y': current_state['board_shape'][0]/2}
+        self.opponent_goal_center = {'x': 0 if self.my_goal == 'right' else current_state['board_shape'][1],
+                                     'y': current_state['board_shape'][0]/2}
+        
+        
+        
+        
+        #  if self.my_goal== 'left':
+        #  if current_state['puck_pos']['x'] > current_state['board_shape'][1]/2:
+         
+        #   new_paddle_pos = {'x': self.my_paddle_pos['x'] - 5,
+        #                     'y': self.my_paddle_pos['y'] }
+          
+        #   if utils.is_inside_goal_area_paddle(new_paddle_pos, current_state) is False and \
+        #              utils.is_out_of_boundaries_paddle(new_paddle_pos, current_state) is None:
+        #             self.my_paddle_pos = new_paddle_pos
+            
+        #    return self.my_paddle_pos
+           
+           
+           
+        #    if self.my_goal== 'right':
+        #    if current_state['puck_pos']['x'] < current_state['board_shape'][1]/2:
+         
+        #   new_paddle_pos = {'x': self.my_paddle_pos['x'] + 5,
+        #                     'y': self.my_paddle_pos['y'] } 
+                            
+        #    if utils.is_inside_goal_area_paddle(new_paddle_pos, current_state) is False and \
+        #              utils.is_out_of_boundaries_paddle(new_paddle_pos, current_state) is None:
+        #             self.my_paddle_pos = new_paddle_pos
+                            
+        #     return self.my_paddle_pos
+        
+          
+          
+          
+          
+        int_radio = current_state['board_shape'][0] * current_state['goal_size'] * 2
+        int_area = None
+        for p in path:
+            if utils.distance_between_points(p[0], self.my_goal_center) < int_radio:
+                int_area = p
+                break
+        
+          
+        if int_area:
+            target = utils.aim(int_area[0], int_area[1],
+                                   self.opponent_goal_center, current_state['puck_radius'],
+                                   current_state['paddle_radius'])
+
+            if target != self.my_paddle_pos:
+                direction = {'x': target['x'] - self.my_paddle_pos['x'],
+                                    'y': target['y'] - self.my_paddle_pos['y']}
+                direction = {k: v / utils.vector_l2norm(direction)
+                                    for k, v in direction.items()}
+
+                distance = min(current_state['paddle_max_speed'] * current_state['delta_t'],
+                                    utils.distance_between_points(target, self.my_paddle_pos))
+                direction = {k: v * distance
+                                    for k, v in direction.items()}
+                new_paddle_pos = {'x': self.my_paddle_pos['x'] + direction['x'],
+                                  'y': self.my_paddle_pos['y'] + direction['y']}
+
+                if utils.is_inside_goal_area_paddle(new_paddle_pos, current_state) is False and \
+                     utils.is_out_of_boundaries_paddle(new_paddle_pos, current_state) is None:
+                    self.my_paddle_pos = new_paddle_pos
+        else:
+            target = self.my_goal_center
+            if target != self.my_paddle_pos:
+                direction = {'x': target['x'] - self.my_paddle_pos['x'],
+                                    'y': target['y'] - self.my_paddle_pos['y']}
+                direction = {k: v / utils.vector_l2norm(direction)
+                                    for k, v in direction.items()}
+
+                distance = min(current_state['paddle_max_speed'] * current_state['delta_t'],
+                                    utils.distance_between_points(target, self.my_paddle_pos))
+                direction = {k: v * distance
+                                    for k, v in direction.items()}
+                new_paddle_pos = {'x': self.my_paddle_pos['x'] + direction['x'],
+                                  'y': self.my_paddle_pos['y'] + direction['y']}
+
+                if utils.is_inside_goal_area_paddle(new_paddle_pos, current_state) is False and \
+                     utils.is_out_of_boundaries_paddle(new_paddle_pos, current_state) is None:
+                    self.my_paddle_pos = new_paddle_pos
+
+        return self.my_paddle_pos
+
+
+
+def estimate_path(current_state, after_time):
+    """ Function that function estimates the next moves in a after_time window
+
+    Returns:
+        list: coordinates and speed of puck for next ticks
+    """
+
+    state = copy.copy(current_state)
+    path = []
+    while after_time > 0:
+        state['puck_pos'] = utils.next_pos_from_state(state)
+        if utils.is_goal(state) is not None:
+            break
+        if utils.next_after_boundaries(state):
+            state['puck_speed'] = utils.next_after_boundaries(state)
+        path.append((state['puck_pos'], state['puck_speed']))
+        after_time -= state['delta_t']
+    return path

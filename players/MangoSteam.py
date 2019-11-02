@@ -1,0 +1,155 @@
+""" Player module
+
+This is a template/example class for your player.
+This is the only file you should modify.
+
+The logic of your hockey robot will be implemented in this class.
+Please implement the interface next_move().
+
+The only restrictions here are:
+ - to implement a class constructor with the args: paddle_pos, goal_side
+ - set self.my_display_name with your team's name, max. 15 characters
+ - to implement the function next_move(self, current_state),
+    returning the next position of your paddle
+"""
+"""Integrantes: 
+        Oscar Macias Rodríguez  A01376398
+        Priscila Ruiz Gámez     A01561869
+"""
+import copy
+import utils
+import random
+
+class Player:
+    def __init__(self, paddle_pos, goal_side):
+
+        # set your team's name, max. 15 chars
+        self.my_display_name = "MANGO STEAM"
+
+        # these belong to my solution,
+        # you may erase or change them in yours
+        self.future_size = 30
+        self.my_goal = goal_side
+        self.my_goal_center = {}
+        self.opponent_goal_center = {}
+        self.my_paddle_pos = paddle_pos
+
+
+    def next_move(self, current_state):
+        """ Function that computes the next move of your paddle
+
+        Implement your algorithm here. This will be the only function
+        used by the GameCore. Be aware of abiding all the game rules.
+
+        Returns:
+            dict: coordinates of next position of your paddle.
+        """
+
+        # update my paddle pos
+        # I need to do this because GameCore moves my paddle randomly
+        self.my_paddle_pos = current_state['paddle1_pos'] if self.my_goal == 'left' \
+                                                              else current_state['paddle2_pos']
+
+        # estimate puck path
+        path = estimate_path(current_state, self.future_size)
+
+        # computing both goal centers
+        x = random.uniform(-250,-150)
+        self.my_goal_center = {'x': x if self.my_goal == 'left' else current_state['board_shape'][1] - x,
+                               'y': current_state['board_shape'][0]/2}
+        y = random.uniform(140, 370)
+        self.opponent_goal_center = {'x': 0 if self.my_goal == 'right' else current_state['board_shape'][1],
+                                     'y': y}
+        y = random.uniform(50,150)
+        # computing upper side centers, aiming in 3/4 when 1/4 in y = 0
+        self.opponent_upper_side = {'x': current_state['board_shape'][1]/4 if self.my_goal == 'right' \
+            else current_state['board_shape'][1]/2 + current_state['board_shape'][1]/4,
+                               'y': 0 }
+        self.opponent_upper_side_2 = {'x': current_state['board_shape'][1]/4 + y if self.my_goal == 'right' \
+            else current_state['board_shape'][1]/2 + current_state['board_shape'][1]/4 - y,
+                               'y': 0 }                               
+        # computing lower side centers, aiming to 3/4 or 1/4 when y = height
+        self.opponent_lower_side = {'x': current_state['board_shape'][1]/4 if self.my_goal == 'right' \
+            else current_state['board_shape'][1]/2 + current_state['board_shape'][1]/8 + current_state['board_shape'][1]/16,
+                               'y': current_state['board_shape'][0] }
+        self.opponent_lower_side_2 = {'x': current_state['board_shape'][1]/4 + y if self.my_goal == 'right' \
+            else current_state['board_shape'][1]/2 + current_state['board_shape'][1]/8 + current_state['board_shape'][1]/16 - y,
+                               'y': current_state['board_shape'][0] }
+        
+        # Generates the dircetion of the shoot by tracking down the opponent's location
+        if current_state['paddle2_pos']['y'] < current_state['board_shape'][0]/2 + current_state['board_shape'][0]/8:
+            shoot = self.opponent_lower_side
+        elif current_state['paddle2_pos']['y'] < current_state['board_shape'][0]/2 - current_state['board_shape'][0]/8:
+            shoot = self.opponent_upper_side_2
+        elif current_state['paddle2_pos']['y'] > current_state['board_shape'][0]/2 + current_state['board_shape'][0]/8:
+            shoot = self.opponent_upper_side
+        elif current_state['paddle2_pos']['y'] > current_state['board_shape'][0]/2 - current_state['board_shape'][0]/8:
+            shoot = self.opponent_lower_side_2
+        else:
+            shoot = self.opponent_goal_center
+        
+        # find if puck path is inside my interest area
+        roi_radius = current_state['board_shape'][0] * current_state['goal_size'] * 2
+        pt_in_roi = None
+        for p in path:
+            if utils.distance_between_points(p[0], self.my_goal_center) < roi_radius:
+                pt_in_roi = p
+                break
+
+        if pt_in_roi and current_state['puck_pos']['x'] > current_state['board_shape'][1]/8:
+            # estimate an aiming position
+            target_pos = utils.aim(pt_in_roi[0], pt_in_roi[1],
+                                   shoot, current_state['puck_radius'],
+                                   current_state['paddle_radius'])
+
+            # move to target position, taking into account the max. paddle speed
+            if target_pos != self.my_paddle_pos:
+                direction_vector = {'x': target_pos['x'] - self.my_paddle_pos['x'],
+                                    'y': target_pos['y'] - self.my_paddle_pos['y']}
+                direction_vector = {k: v / utils.vector_l2norm(direction_vector)
+                                    for k, v in direction_vector.items()}
+
+                movement_dist = min(current_state['paddle_max_speed'] * current_state['delta_t'],
+                                    utils.distance_between_points(target_pos, self.my_paddle_pos))
+                direction_vector = {k: v * movement_dist 
+                                    for k, v in direction_vector.items()}
+                new_paddle_pos = {'x': self.my_paddle_pos['x'] + direction_vector['x'],
+                                  'y': self.my_paddle_pos['y'] + direction_vector['y']}
+
+                # New computed input
+                #r = current_state['board_shape'][0] 
+                #if utils.detect_collision(current_state, self.my_paddle_pos, r):
+                 #   center = {'x': 0 if self.my_goal == 'left' else current_state['board_shape'][1],
+                  #            'y': current_state['board_shape'][0]/2}
+                   # r = current_state['goal_size']
+                    #self.my_paddle_pos = utils.nearest_point_in_circle(center, r, self.my_paddle_pos)
+                    #if path == center:
+                     #   self.my_paddle_pos = self.my_goal_center
+
+                # check if computed new position in not inside goal area
+                # check if computed new position in inside board limits
+                if utils.is_inside_goal_area_paddle(new_paddle_pos, current_state) is False and \
+                     utils.is_out_of_boundaries_paddle(new_paddle_pos, current_state) is None:
+                    self.my_paddle_pos = new_paddle_pos
+        
+        return self.my_paddle_pos
+
+
+def estimate_path(current_state, after_time):
+    """ Function that function estimates the next moves in a after_time window
+
+    Returns:
+        list: coordinates and speed of puck for next ticks
+    """
+
+    state = copy.copy(current_state)
+    path = []
+    while after_time > 0:
+        state['puck_pos'] = utils.next_pos_from_state(state)
+        if utils.is_goal(state) is not None:
+            break
+        if utils.next_after_boundaries(state):
+            state['puck_speed'] = utils.next_after_boundaries(state)
+        path.append((state['puck_pos'], state['puck_speed']))
+        after_time -= state['delta_t']
+    return path

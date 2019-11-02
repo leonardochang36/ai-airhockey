@@ -33,7 +33,7 @@ def main(args):
     x_offset = 0.25 if random.uniform(-1, 1) < 0 else 0.75
     state['puck_pos'] = {'x': board.shape[1] * x_offset, 'y': random.uniform(0 + state['puck_radius'],
                          board.shape[0] - state['puck_radius'])}
-    state['puck_speed'] = {'x': 0, 'y': 500}
+    state['puck_speed'] = {'x': 0, 'y': 700}
     state['paddle1_pos'] = {'x': board.shape[0]*state['goal_size']/2+1, 'y': board.shape[0]/2}
     state['paddle2_pos'] = {'x': board.shape[1] - board.shape[0]*state['goal_size']/2-1,
                             'y': board.shape[0]/2}
@@ -81,7 +81,7 @@ if __name__ == '__main__':
 
     # Optional arguments
     parser.add_argument("-p1", "--player1", default='player_A', help="Enter Player1 file url without .py extension")
-    parser.add_argument("-p2", "--player2", default='player_B', help="Enter Player2 file url without .py extension")
+    parser.add_argument("-p2", "--player2", default='player_BLAZERS', help="Enter Player2 file url without .py extension")
     parser.add_argument("-vf", "--video_file", default=argparse.SUPPRESS, help="Enter video url to save game, use .avi extension")
     parser.add_argument("-sw", "--show_window", default=True, help="Do you want real-time visual feed?")
 

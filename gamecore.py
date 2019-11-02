@@ -31,7 +31,7 @@ class GameCore:
         self.max_idle_moves = 100    # max number of idle moves after init position, 100
         self.winning_points = 7      # goals to win, 7
         self.max_time = 0.7          # max time (seconds) for one move, i.e., player.next_move, 0.7
-        self.game_max_ticks = 2500   # max ticks (moves) for a game, 2500
+        self.game_max_ticks = 3500   # max ticks (moves) for a game, 2500
 
 
     def begin_game(self):
