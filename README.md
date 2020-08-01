@@ -4,7 +4,7 @@ __Tecnologico de Monterrey, campus Santa Fe__
 
 __Organizer:__ Dr. Leonardo Chang
 
-
+![Alt Text](ai-hockey.gif)
 
 ## Challenge Objective
 
